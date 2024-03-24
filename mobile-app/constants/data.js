@@ -11,5 +11,5 @@ export const photos = [
 
 export const imagesDataURL = ['https://i.ibb.co/W29btXp/profile.jpg'];
 
-// export const URL = 'http://192.46.215.253:5000';
-export const URL = 'http://10.0.2.2:5000';
+export const URL = 'http://192.46.215.253:6000';
+// export const URL = 'http://10.0.2.2:5000';

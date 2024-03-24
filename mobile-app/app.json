@@ -1,8 +1,8 @@
 {
-  "name": "BD Transfer",
+  "name": "Anytime P2P",
   "expo": {
-    "name": "usdToInr",
-    "slug": "usdToInr",
+    "name": "anytimep2p",
+    "slug": "anytimep2p",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
@@ -12,7 +12,9 @@
       "resizeMode": "contain",
       "backgroundColor": "#ffffff"
     },
-    "assetBundlePatterns": ["**/*"],
+    "assetBundlePatterns": [
+      "**/*"
+    ],
     "ios": {
       "supportsTablet": true
     },
@@ -21,7 +23,7 @@
         "foregroundImage": "./assets/adaptive-icon.png",
         "backgroundColor": "#ffffff"
       },
-      "package": "com.syket.usdToInr"
+      "package": "com.syket.anytimep2p"
     },
     "web": {
       "favicon": "./assets/favicon.png"
@@ -38,11 +40,11 @@
       ]
     ],
     "updates": {
-      "url": "https://u.expo.dev/83701c5d-60f7-4508-b555-d43a9f078ce9"
+      "url": ""
     },
     "extra": {
       "eas": {
-        "projectId": "55198f2a-8a77-47ef-8217-5b3d4983ffd5"
+        "projectId": "7a391752-ad47-4a2b-87fa-6f27d9df2ab9"
       }
     },
     "runtimeVersion": {
