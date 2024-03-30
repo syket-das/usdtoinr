@@ -313,6 +313,37 @@ router.put(
   }
 );
 
+router.post('/create-invoice', isAuthenticated, async (req, res, next) => {
+  try {
+    const { userId } = req.payload;
+    const { usdt } = req.body;
+
+    const response = await fetch('https://payid19.com/api/v1/create_invoice', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        public_key: '5JOYa4SCMUiiPH9NKVYoa49wW',
+        private_key: 'Zlk6IU7x8Av9QsSvJaUWlOjyJChpJoR14FLhoLns',
+        price_amount: usdt,
+        customer_id: userId,
+        title: 'Add Money to Wallet',
+      }),
+    });
+
+    const data = await response.json();
+
+    res.json({
+      success: true,
+      data,
+    });
+  } catch (error) {
+    console.log(error);
+    next(error);
+  }
+});
+
 router;
 
 module.exports = router;

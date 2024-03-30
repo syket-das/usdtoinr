@@ -4,16 +4,23 @@ import {
   TextInput,
   ScrollView,
   TouchableOpacity,
+  Button,
 } from 'react-native';
 import React, { useEffect, useState } from 'react';
 import { COLORS } from '../constants';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import Button from '../components/Button';
 import useMoneyStore from '../store/moneyStore';
 import Toast from 'react-native-simple-toast';
 import useBankStore from '../store/bankStore';
+import QRCode from 'react-native-qrcode-svg';
+import useUserStore from '../store/userStore';
+import { WebView } from 'react-native-webview';
+import * as Linking from 'expo-linking';
 
 const AddMoneyRequest = () => {
+  const { user, getUser } = useUserStore((state) => state);
+  const [link, setLink] = useState('');
+
   const { addMoneyRequest } = useMoneyStore((state) => state);
 
   const { adminBanks, getAdminBanks } = useBankStore((state) => state);
@@ -62,221 +69,79 @@ const AddMoneyRequest = () => {
     }
   };
 
+  const createInvoice = async () => {
+    if (Number(data.usdt) == 0) {
+      Toast.show('Please enter usdt amount', Toast.SHORT);
+      return;
+    }
+
+    const price = Number(data.usdt);
+    const email = user.email;
+
+    try {
+      const response = await fetch(
+        'https://payid19.com/api/v1/create_invoice',
+        {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            public_key: '5JOYa4SCMUiiPH9NKVYoa49wW',
+            private_key: 'Zlk6IU7x8Av9QsSvJaUWlOjyJChpJoR14FLhoLns',
+            price_amount: price,
+            email: email,
+          }),
+        }
+      );
+      const data = await response.json();
+
+      console.log(data);
+
+      if (data.status === 'error') {
+        Toast.show(data.message, Toast.SHORT);
+        return;
+      }
+
+      setLink(data.message);
+      Linking.openURL(data.message);
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: COLORS.white }}>
-      <ScrollView
-        showsVerticalScrollIndicator={false}
-        style={{ flex: 1, marginHorizontal: 22 }}
-      >
-        <View style={{ marginVertical: 22 }}>
-          <Text
-            style={{
-              fontSize: 22,
-              fontWeight: 'bold',
-              marginVertical: 12,
-              color: COLORS.black,
-            }}
-          >
-            Add Money Request
-          </Text>
-
-          <Text
-            style={{
-              fontSize: 16,
-              color: 'red',
-              marginBottom: 12,
-            }}
-          >
-            Please select a bank account where you have sent the money
-          </Text>
-
-          <ScrollView horizontal showsHorizontalScrollIndicator={false}>
-            {adminBanks.map((bank) => (
-              <TouchableOpacity
-                onPress={() => {
-                  setSelectedBankId(bank.id);
-                  setData({ ...data, method: bank.bankName });
-                }}
-                className=" p-4 m-2 rounded-lg"
-                key={bank.id}
-                style={{
-                  borderColor: selectedBankId === bank.id ? 'green' : 'gray',
-                  backgroundColor: COLORS.white,
-                  borderWidth: 4,
-                }}
-              >
-                <Text
-                  style={{
-                    fontSize: 16,
-                    fontWeight: 500,
-                    color: COLORS.black,
-                  }}
-                >
-                  {bank.bankName}
-                </Text>
-                <Text
-                  style={{
-                    fontSize: 16,
-                    fontWeight: 400,
-                    color: COLORS.black,
-                  }}
-                >
-                  Account Number: {bank.accountNumber}
-                </Text>
-                <Text
-                  style={{
-                    fontSize: 16,
-                    fontWeight: 400,
-                    color: COLORS.black,
-                  }}
-                >
-                  Account Holder Name: {bank.accountHolderName}
-                </Text>
-                <Text
-                  style={{
-                    fontSize: 16,
-                    fontWeight: 400,
-                    color: COLORS.black,
-                  }}
-                >
-                  Branch: {bank.branchName}
-                </Text>
-                <Text
-                  style={{
-                    fontSize: 16,
-                    fontWeight: 400,
-                    color: COLORS.black,
-                  }}
-                >
-                  IFSC: {bank.ifscCode}
-                </Text>
-              </TouchableOpacity>
-            ))}
-          </ScrollView>
-        </View>
-        <View style={{ marginBottom: 12 }}>
-          <Text
-            style={{
-              fontSize: 16,
-              fontWeight: 400,
-              marginVertical: 8,
-            }}
-          >
-            USDT
-          </Text>
-
-          <View
-            style={{
-              width: '100%',
-              height: 48,
-              borderColor: COLORS.black,
-              borderWidth: 1,
-              borderRadius: 8,
-              alignItems: 'center',
-              justifyContent: 'center',
-              paddingLeft: 22,
-            }}
-          >
-            <TextInput
-              placeholder="Enter usdt amount "
-              placeholderTextColor={COLORS.black}
-              keyboardType="numeric"
-              style={{
-                width: '100%',
-              }}
-              value={
-                data.usdt === 0
-                  ? 0
-                  : data.usdt.toLocaleString(undefined, {
-                      minimumFractionDigits: 2,
-                      maximumFractionDigits: 2,
-                    })
-              }
-              onChangeText={(text) => setData({ ...data, usdt: text })}
-            />
-          </View>
-        </View>
-        <View style={{ marginBottom: 12 }}>
-          <Text
-            style={{
-              fontSize: 16,
-              fontWeight: 400,
-              marginVertical: 8,
-            }}
-          >
-            Transaction Id
-          </Text>
-
-          <View
-            style={{
-              width: '100%',
-              height: 48,
-              borderColor: COLORS.black,
-              borderWidth: 1,
-              borderRadius: 8,
-              alignItems: 'center',
-              justifyContent: 'center',
-              paddingLeft: 22,
-            }}
-          >
-            <TextInput
-              placeholder="Enter transaction id "
-              placeholderTextColor={COLORS.black}
-              keyboardType="default"
-              style={{
-                width: '100%',
-              }}
-              value={data.transactionId}
-              onChangeText={(text) => setData({ ...data, transactionId: text })}
-            />
-          </View>
-        </View>
-        <View style={{ marginBottom: 12 }}>
-          <Text
-            style={{
-              fontSize: 16,
-              fontWeight: 400,
-              marginVertical: 8,
-            }}
-          >
-            Account Number
-          </Text>
-
-          <View
-            style={{
-              width: '100%',
-              height: 48,
-              borderColor: COLORS.black,
-              borderWidth: 1,
-              borderRadius: 8,
-              alignItems: 'center',
-              justifyContent: 'center',
-              paddingLeft: 22,
-            }}
-          >
-            <TextInput
-              placeholder="Enter your account number"
-              placeholderTextColor={COLORS.black}
-              keyboardType="default"
-              style={{
-                width: '100%',
-              }}
-              value={data.accountNumber}
-              onChangeText={(text) => setData({ ...data, accountNumber: text })}
-            />
-          </View>
-        </View>
-
-        <Button
-          onPress={handleAddMoneyRequest}
-          title="Add Money"
-          filled
-          style={{
-            marginTop: 18,
-            marginBottom: 4,
-          }}
+      <View className="flex-1 items-center justify-center">
+        <TextInput
+          className="border border-gray-400 rounded-lg p-2 w-3/4"
+          placeholder="Enter usdt amount"
+          value={data.usdt}
+          onChangeText={(text) => setData({ ...data, usdt: text })}
+          keyboardType="numeric"
         />
-      </ScrollView>
+        <TouchableOpacity
+          onPress={() => createInvoice()}
+          className="bg-blue-500 p-2 rounded-lg  w-3/4 mt-4"
+        >
+          <Text className="text-white text-center">Create Invoice</Text>
+        </TouchableOpacity>
+      </View>
+
+      <View className="flex-1 items-center justify-center">
+        {link ? (
+          <WebView
+            style={{
+              flex: 1,
+              height: 1500,
+              width: '100%',
+            }}
+            source={{
+              uri: link,
+            }}
+          />
+        ) : null}
+      </View>
     </SafeAreaView>
   );
 };
